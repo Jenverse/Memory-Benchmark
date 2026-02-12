@@ -119,7 +119,33 @@ Complete test dataset information and access guide.
 
 ---
 
-## 🔍 What Was Tested
+## � Performance by Category
+
+Here's how each system performed across the 7 failure categories:
+
+| Category | N | Base | Zep | Redis | Mem0 | LangMem | Agent | ∆ |
+|----------|---|------|-----|-------|------|---------|-------|---|
+| **Contradiction Update** | 18 | 0% | 0% | 33% | 67% | 83% | **89%** | +6 |
+| **Simple Recall** | 8 | 0% | 0% | 38% | 50% | 50% | **75%** | +25 |
+| **Implicit Preference** | 5 | 0% | 0% | **100%** | 80% | **100%** | **100%** | 0 |
+| **Temporal Relevance** | 6 | 17% | 17% | 50% | 50% | 67% | **83%** | +16 |
+| **Consolidation** | 6 | 0% | 0% | 50% | **67%** | 33% | 50% | −17 |
+| **Noise Resistance** | 6 | **89%** | 83% | 83% | 67% | 83% | 83% | 0 |
+| **Cross-Session** | 8 | 0% | 0% | 0% | **25%** | 13% | **25%** | 0 |
+
+**Legend:**
+- **N** = Number of tests in this category
+- **∆** = Difference between Agent and best external system (LangMem)
+
+**Key Observations:**
+- **Contradiction Update** is the biggest differentiator (31.6% of all tests)
+- **Agent wins 4/7 categories outright**, ties on 2, loses on 1 (Consolidation)
+- **Zep fails catastrophically** on most categories (0% on 5 out of 7)
+- **Baseline (no memory) performs best on Noise Resistance** - sometimes simpler is better!
+
+---
+
+## �🔍 What Was Tested
 
 ### Memory Systems (5)
 1. **Agent-Driven**: Our baseline using Claude for active reasoning
