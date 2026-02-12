@@ -1,10 +1,77 @@
 # Memory Systems Evaluation - Documentation
 
-Welcome to the MemoryBench evaluation documentation! This folder contains comprehensive information about our evaluation of 5 memory systems for LLM agents.
+
+## 🎯 Purpose
+
+We built a diagnostic benchmark to evaluate how well different memory systems help AI agents remember user information across conversations. This will help us evaluate Redis Agent Memory performance compared to other players int the market. 
+
+We evaluated an agent-driven memory architecture, in which the agent determines what information to store, retrieve, and update, and compared it against LangMem, Mem0, Redis, and Zep.
+---
+
+## 📊 Key Results
+
+| System | Accuracy | Type | Key Finding |
+|--------|----------|------|-------------|
+| **Agent-Driven** | **82.1%** | Active reasoning | ✅ **Best overall** - AI decides what to remember |
+| **LangMem** | 57.9% | Automatic extraction | Good general performance |
+| **Mem0** | 57.1% | Automatic extraction | Similar to LangMem |
+| **Redis** | 43.9% | Automatic extraction | Moderate performance |
+| **Zep** | 10.5% | Automatic extraction | ❌ **Failed** - Cannot update facts |
 
 ---
 
-## 📚 Documentation Files
+## 🔬 What We Tested
+
+### Test Dataset
+- **20 diverse user profiles** (engineers, researchers, designers, etc.)
+- **100 conversations** (5 sessions per user: 4 training + 1 testing)
+- **57 test questions** across 7 failure categories
+
+### 7 Failure Categories
+1. **Contradiction Update** (31.6% of tests) - Facts that change over time
+   - Example: User moves from NYC → SF (must update, not duplicate)
+
+2. **Simple Recall** - Basic fact retrieval
+3. **Implicit Preference** - Inferred from behavior, never stated
+4. **Temporal Relevance** - Information that becomes outdated
+5. **Consolidation** - Merging related memories
+6. **Noise Resistance** - Ignoring irrelevant chatter
+7. **Cross-Session** - Combining facts from multiple sessions
+
+
+
+## 📈 Detailed Performance by Category
+
+### Complete Category-by-Category Breakdown
+
+| Category | N | Base | Zep | Redis | Mem0 | LangMem | Agent | ∆ |
+|----------|---|------|-----|-------|------|---------|-------|---|
+| **Contradiction Update** | 18 | 0% | 0% | 33% | 67% | 83% | **89%** | +6 |
+| **Simple Recall** | 8 | 0% | 0% | 38% | 50% | 50% | **75%** | +25 |
+| **Implicit Preference** | 5 | 0% | 0% | **100%** | 80% | **100%** | **100%** | 0 |
+| **Temporal Relevance** | 6 | 17% | 17% | 50% | 50% | 67% | **83%** | +16 |
+| **Consolidation** | 6 | 0% | 0% | 50% | **67%** | 33% | 50% | −17 |
+| **Noise Resistance** | 6 | **89%** | 83% | 83% | 67% | 83% | 83% | 0 |
+| **Cross-Session** | 8 | 0% | 0% | 0% | **25%** | 13% | **25%** | 0 |
+
+**Legend:**
+- **N** = Number of tests in this category
+- **Base** = Current-session-only baseline (0/No persistent memory) i.e. agent knows nothing about previous 4 session 
+- **Zep, Redis, Mem0, LangMem** = External memory systems 
+- **Agent** = Agent-Driven memory (active reasoning)
+- **∆** = Difference between Agent and best external system (LangMem)
+
+**Key Findings:**
+- **Agent-Driven wins 4 out of 7 categories outright**
+- **Contradiction Update**: Agent's biggest advantage (+6 over LangMem, +89 over Zep)
+- **Simple Recall**: Agent +25 points over best external system
+- **Consolidation**: Only category where external system (Mem0) beats Agent
+- **Noise Resistance**: Baseline performs best (89%) - simpler is better for filtering noise
+
+
+---
+
+## 📚 Documentation
 
 ### 1. [EVALUATION_OVERVIEW.md](EVALUATION_OVERVIEW.md)
 **Start here!** High-level summary of the entire evaluation.
@@ -77,7 +144,7 @@ Visual summary with charts and quick stats.
 
 ---
 
-### 6. [TEST_DATA_README.md](TEST_DATA_README.md)
+### 6. [TEST_DATA.md](TEST_DATA_README.md) and [TEST_DATA.py](TEST_DATA.py)
 Complete test dataset information and access guide.
 
 **Contents**:
@@ -89,160 +156,4 @@ Complete test dataset information and access guide.
 
 **Read this if**: You want to access or understand the complete test dataset.
 
----
-
-## 🎯 Quick Start
-
-### For Team Members
-
-**If you have 5 minutes**: Read [EVALUATION_OVERVIEW.md](EVALUATION_OVERVIEW.md)
-
-**If you have 15 minutes**: Read EVALUATION_OVERVIEW.md + [RESULTS_SUMMARY.md](RESULTS_SUMMARY.md)
-
-**If you have 30 minutes**: Read all 6 documents
-
-**If you want to dive deep**: Read all docs + explore `../benchmark/data.py` for the complete dataset (see [TEST_DATA_README.md](TEST_DATA_README.md) for access guide)
-
----
-
-## 📊 Key Results at a Glance
-
-| Memory System | Accuracy | w/ Partial | Rank |
-|---------------|----------|------------|------|
-| **Agent-Driven** | **82.1%** | **89.3%** | 🥇 |
-| **LangMem** | 57.9% | 73.7% | 🥈 |
-| **Mem0** | 57.1% | 66.1% | 🥉 |
-| **Redis** | 43.9% | 57.0% | 4th |
-| **Zep** | 10.5% | 14.9% | 5th |
-
-**Main Takeaway**: Agent-driven memory with active reasoning outperforms automatic extraction systems by 24+ percentage points.
-
----
-
-## � Performance by Category
-
-Here's how each system performed across the 7 failure categories:
-
-| Category | N | Base | Zep | Redis | Mem0 | LangMem | Agent | ∆ |
-|----------|---|------|-----|-------|------|---------|-------|---|
-| **Contradiction Update** | 18 | 0% | 0% | 33% | 67% | 83% | **89%** | +6 |
-| **Simple Recall** | 8 | 0% | 0% | 38% | 50% | 50% | **75%** | +25 |
-| **Implicit Preference** | 5 | 0% | 0% | **100%** | 80% | **100%** | **100%** | 0 |
-| **Temporal Relevance** | 6 | 17% | 17% | 50% | 50% | 67% | **83%** | +16 |
-| **Consolidation** | 6 | 0% | 0% | 50% | **67%** | 33% | 50% | −17 |
-| **Noise Resistance** | 6 | **89%** | 83% | 83% | 67% | 83% | 83% | 0 |
-| **Cross-Session** | 8 | 0% | 0% | 0% | **25%** | 13% | **25%** | 0 |
-
-**Legend:**
-- **N** = Number of tests in this category
-- **∆** = Difference between Agent and best external system (LangMem)
-
-**Key Observations:**
-- **Contradiction Update** is the biggest differentiator (31.6% of all tests)
-- **Agent wins 4/7 categories outright**, ties on 2, loses on 1 (Consolidation)
-- **Zep fails catastrophically** on most categories (0% on 5 out of 7)
-- **Baseline (no memory) performs best on Noise Resistance** - sometimes simpler is better!
-
----
-
-## �🔍 What Was Tested
-
-### Memory Systems (5)
-1. **Agent-Driven**: Our baseline using Claude for active reasoning
-2. **LangMem**: LangChain's memory SDK
-3. **Mem0**: External memory system with automatic extraction
-4. **Redis**: Redis Agent Memory Server with two-stage approach
-5. **Zep**: Knowledge graph-based memory system
-
-### Test Dataset
-- **20 user profiles** (diverse personas)
-- **5 sessions per profile** (4 training + 1 test)
-- **57 total test questions**
-- **7 failure categories**
-
-### Failure Categories
-1. Simple Recall (8 tests)
-2. Contradiction Update (18 tests) ← Most common
-3. Implicit Preference (5 tests)
-4. Temporal Relevance (6 tests)
-5. Consolidation (6 tests)
-6. Noise Resistance (6 tests)
-7. Cross-Session (8 tests)
-
----
-
-## 💡 Key Insights
-
-### 1. Agent-Driven Wins
-- 82.1% accuracy (best overall)
-- Perfect scores on contradiction updates, temporal relevance, consolidation
-- Active reasoning is more effective than automatic extraction
-
-### 2. Contradiction Updates Are Critical
-- 31.6% of all tests (18/57)
-- Agent-Driven: 100% ✅
-- Zep: 0% ❌ (catastrophic failure)
-
-### 3. Zep's Failure
-- Only 10.5% overall accuracy
-- Cannot update contradictory facts (keeps stale memories)
-- Example: Kept "NYC" when user moved to "SF"
-- Only strength: Noise resistance (83.3%)
-
-### 4. LangMem vs Mem0
-- Similar performance (~57%)
-- LangMem better at: Contradiction updates, noise resistance
-- Mem0 better at: Implicit preferences (100%)
-
----
-
-## 📁 Related Files
-
-- `benchmark/data.py` - Complete test dataset with all 20 profiles
-- `results/` - Raw results files (JSON format)
-- `memory_systems/` - Implementation of all 4 memory systems
-- `run_experiment.py` - Main evaluation script
-
----
-
-## 🚀 Running the Evaluation
-
-To reproduce results:
-
-```bash
-# Run individual systems
-python run_experiment.py --system agent --trials 1
-python run_experiment.py --system mem0 --trials 1
-python run_experiment.py --system langmem --trials 1
-python run_experiment.py --system zep_memory --trials 1
-
-# Results saved to results/ directory
-```
-
----
-
-## 📧 Questions?
-
-For questions about:
-- **Test data**: See TEST_DATA_STRUCTURE.md
-- **Results**: See RESULTS_SUMMARY.md
-- **Methodology**: See METHODOLOGY.md
-- **Everything**: See EVALUATION_OVERVIEW.md
-
----
-
-## 📝 Citation
-
-If you use this benchmark in your research, please cite:
-
-```
-MemoryBench: A Diagnostic Benchmark for Persistent Memory in LLM Agents
-[Your Name], [Year]
-```
-
----
-
-**Last Updated**: February 11, 2026
-**Version**: 1.0
-**Status**: Complete ✅
 
